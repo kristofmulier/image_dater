@@ -1,5 +1,5 @@
 from typing import *
-import subprocess, re, os, datetime, argparse
+import subprocess, re, os, datetime, argparse, sys, traceback
 
 # Keep a pattern to extract dates from the metadata.
 p = re.compile(r'(20\d\d)(\d\d)(\d\d)(\d\d)(\d\d)(\d\d)\.(\d*)')
@@ -39,17 +39,30 @@ def get_image_dates(filepath) -> List[datetime.datetime]:
     output_utf = output.decode('utf-8', errors='ignore')
     dates = []
     for m in p.finditer(output_utf):
-        dates.append(
-            datetime.datetime(
-                year        = int(m.group(1)),
-                month       = int(m.group(2)),
-                day         = int(m.group(3)),
-                hour        = int(m.group(4)),
-                minute      = int(m.group(5)),
-                second      = int(m.group(6)),
-                microsecond = int(m.group(7)),
+        try:
+            dates.append(
+                datetime.datetime(
+                    year        = int(m.group(1)),
+                    month       = int(m.group(2)),
+                    day         = int(m.group(3)),
+                    hour        = int(m.group(4)),
+                    minute      = int(m.group(5)),
+                    second      = int(m.group(6)),
+                    microsecond = int(m.group(7)),
+                )
             )
-        )
+        except ValueError:
+            dates.append(
+                datetime.datetime(
+                    year        = int(m.group(1)),
+                    month       = int(m.group(2)),
+                    day         = int(m.group(3)),
+                    hour        = int(m.group(4)),
+                    minute      = int(m.group(5)),
+                    second      = int(m.group(6)),
+                    microsecond = 0,
+                )
+            )
     return sorted(dates)
 
 def parse_images(dirpath):
@@ -58,11 +71,17 @@ def parse_images(dirpath):
     '''
     for root, dirs, files in os.walk(dirpath):
         for f in files:
-            if not f.lower().endswith(('.heic', '.mov', '.jpeg', '.jpg')):
+            if not f.lower().endswith(('.heic', '.mov', '.jpeg', '.jpg', '.mp4')):
                 continue
             filepath = os.path.join(root, f).replace('\\', '/')
-            date_str = date_to_str(get_image_dates(filepath)[0])
-            filepath_dict[filepath] = date_str
+            try:
+                date_str = date_to_str(get_image_dates(filepath)[0])
+            except:
+                print(f'Cannot parse file: {filepath}')
+                date_str = None
+                traceback.print_exc()
+            if date_str is not None:
+                filepath_dict[filepath] = date_str
             continue
         continue
 
@@ -80,6 +99,7 @@ def parse_images(dirpath):
             f'{date_str}-{cntr:02d}',
         ).replace('\\', '/') + os.path.splitext(filepath)[1]
         print(f'RENAME: {src_filepath} => {dst_filepath}')
+        sys.stdout.flush()
         os.rename(src_filepath, dst_filepath)
         continue
     return
