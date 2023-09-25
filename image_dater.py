@@ -1,11 +1,12 @@
 from typing import *
 import subprocess, re, os, datetime, argparse, sys, traceback
+q = "'"
 
 # Keep a pattern to extract dates from the metadata.
 p1 = re.compile(r'(20\d\d)(\d\d)(\d\d)(\d\d)(\d\d)(\d\d)\.(\d*)')
 
 # The following pattern matches with filenames that are already converted by this script.
-p2 = re.compile(r'(20\d\d)(\d\d)(\d\d)-(\d\d)(\d\d)(\d\d)-(\d\d)')
+p2 = re.compile(r'(20\d\d)(\d\d)(\d\d)-(\d\d)(\d\d)(\d\d)-(\d+)')
 
 # Keep a dictionary with all the full filepaths as keys (guaranteed to be unique) and dates as the
 # values. The dates are already converted into strings here.
@@ -150,6 +151,10 @@ if __name__ == '__main__':
     if args.help:
         show_help()
     if args.directory is not None:
+        if not os.path.isdir(args.directory):
+            print(f'ERROR: Cannot find directory: {q}{args.directory}{q}')
+            sys.exit(0)
         parse_images(args.directory)
 
     print('\nQuit image dater tool\n')
+    sys.exit(0)
