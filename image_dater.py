@@ -1,12 +1,22 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+# This script renames images based on their date. It parses the exif data of each image file to
+# extract the date the photo was taken. The date is then used to rename the image file. The renaming
+# is done in the same directory as the original file. The new filename consists of the date and a
+# counter to ensure uniqueness.
+
 from typing import *
-import subprocess, re, os, datetime, argparse, sys, traceback
+import os, datetime, argparse, sys
 import exif_parser
 
 def show_help() -> None:
     '''
     Print help info and quit.
     '''
-    print('Rename images based on their date.')
+    print('This script renames images based on their date. It parses the exif data of each image')
+    print('file to extract the date the photo was taken. The date is then used to rename the image')
+    print('file. The renaming is done in the same directory as the original file. The new filename')
+    print('consists of the date and a counter to ensure uniqueness.')
     print('Usage:')
     print('    python image_dater.py -h')
     print('    python image_dater.py -d <directory>')
@@ -14,10 +24,11 @@ def show_help() -> None:
     print('Options:')
     print('    -h, --help                  Show this help message and exit.')
     print('')
-    print('    -d, --directory <directory> All images in the directory and its subdirectories will')
-    print('                                be parsed and renamed according to their date.')
+    print('    -d, --directory <directory> Rename all images in the given directory and its sub-')
+    print('                                directories according to their dates.')
     print('')
-    print('    -f, --file <file>           Specify a file to investigate. Show its date taken.')
+    print('    -f, --file <file>           Show the date the photo was taken for the given file (no')
+    print('                                renaming).')
     print('')
     print('    -v, --verbose               Print more information.')
     print('')
@@ -122,7 +133,8 @@ def parse_and_rename_images(dirpath:str, dry_run:bool=False, verbose:bool=False)
 
 def date_to_str(date_obj:datetime.datetime) -> str:
     '''
-    Convert the date object to a string.
+    Convert the date object to a string. This is the string format used for the new filename (to
+    which a counter is appended).
     '''
     return date_obj.strftime('%Y%m%d-%H%M%S')
 
@@ -134,7 +146,6 @@ def draw_progress_bar(total:int, progress:int, label:str):
     Args:
         total (int): The total count of the operation (i.e., 100% completion).
         progress (int): The current progress count.
-        bar_length (int): Length of the progress bar in characters. Default is 50.
     """
     bar_length:int=50
     global progbar_percent
@@ -170,7 +181,7 @@ if __name__ == '__main__':
             print('ERROR: No action specified.')
             show_help()
             print('\nQuit image dater tool\n')
-            sys.exit(0)
+            sys.exit(1)
     if args.directory and args.file:
         print('ERROR: Cannot use both -d and -f options at the same time.')
         print('\nQuit image dater tool\n')
@@ -182,13 +193,20 @@ if __name__ == '__main__':
         print('\nQuit image dater tool\n')
         sys.exit(0)
 
-    #& Parse directory
+    #& Parse directory and rename images
     if args.directory:
         if not os.path.isdir(args.directory):
             print(f"ERROR: Cannot find directory: '{args.directory}'")
             print('\nQuit image dater tool\n')
             sys.exit(1)
-        parse_and_rename_images(args.directory, args.dry_run, args.verbose)
+
+        user_input = input(
+            f"Rename the pictures in this folder:\n"
+            f"'{args.directory}'\n"
+            f"Proceed? [yes|no]\n"
+        )
+        if user_input.lower() in ('y', 'yes'):
+            parse_and_rename_images(args.directory, args.dry_run, args.verbose)
         print('\nQuit image dater tool\n')
         sys.exit(0)
 

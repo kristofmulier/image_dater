@@ -13,7 +13,7 @@
 # $ sudo apt install python-is-python3
 
 from typing import *
-import subprocess, re, os, datetime, traceback, argparse, sys
+import subprocess, re, os, datetime, argparse, sys
 
 p1 = re.compile(
     r"^([^:]+):\s+(\d{4}:\d{2}:\d{2} \d{2}:\d{2}:\d{2}(?:\.\d+)?(?:[+-]\d{2}:\d{2})?Z?)",
@@ -131,11 +131,11 @@ if __name__ == '__main__':
         if args.verbose:
             print('')
             print(f"Parsing exif data from: '{args.file}'")
-            date_obj = get_photo_taken_date(args.file, args.verbose)
-            print(f"Date taken:   '{date_obj}'")
+            _date_obj = get_photo_taken_date(args.file, args.verbose)
+            print(f"Date taken:   '{_date_obj}'")
         else:
-            date_obj = get_photo_taken_date(args.file, args.verbose)
-            print(f"Date taken: {date_obj}")
+            _date_obj = get_photo_taken_date(args.file, args.verbose)
+            print(f"Date taken: {_date_obj}")
         sys.exit(0)
     
     print('\nQuit exif parser tool\n')
