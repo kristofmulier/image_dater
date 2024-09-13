@@ -6,22 +6,29 @@
 # counter to ensure uniqueness.
 
 from typing import *
-import os, datetime, argparse, sys
+import os, datetime, argparse, sys, subprocess
 import exif_parser
 
 def show_help() -> None:
     '''
     Print help info and quit.
     '''
+    print('')
+    print('IMAGE DATER')
+    print('===========')
     print('This script renames images based on their date. It parses the exif data of each image')
     print('file to extract the date the photo was taken. The date is then used to rename the image')
     print('file. The renaming is done in the same directory as the original file. The new filename')
     print('consists of the date and a counter to ensure uniqueness.')
+    print('')
     print('Usage:')
+    print('------')
     print('    python image_dater.py -h')
-    print('    python image_dater.py -d <directory>')
+    print('    python image_dater.py -d <directory> [-v] [-n]')
     print('    python image_dater.py -f <file> [-v]')
+    print('')
     print('Options:')
+    print('--------')
     print('    -h, --help                  Show this help message and exit.')
     print('')
     print('    -d, --directory <directory> Rename all images in the given directory and its sub-')
@@ -34,6 +41,19 @@ def show_help() -> None:
     print('')
     print('    -n, --dry-run               Do not rename files. Only show what would be done.')
     print('')
+    print('Notes:')
+    print('------')
+    print('The script uses the exiftool command-line tool to extract the exif data from the image')
+    print('files. Unfortunately this tool is not available on Windows. You can use the Windows')
+    print('Subsystem for Linux (WSL) to run the script.')
+    print('')
+    print('Example:')
+    print('--------')
+    print('Open WSL and navigate to the folder containing this script:')
+    print('    $ cd /mnt/c/Users/krist/Documents/image_dater')
+    print('')
+
+
     return
 
 def parse_and_rename_images(dirpath:str, dry_run:bool=False, verbose:bool=False) -> None:
@@ -178,14 +198,16 @@ if __name__ == '__main__':
 
     #& Sanitize input
     if not args.help and not args.directory and not args.file:
+            print('')
             print('ERROR: No action specified.')
             show_help()
             print('\nQuit image dater tool\n')
             sys.exit(1)
     if args.directory and args.file:
+        print('')
         print('ERROR: Cannot use both -d and -f options at the same time.')
         print('\nQuit image dater tool\n')
-        sys.exit(0)
+        sys.exit(1)
 
     #& Show help and quit
     if args.help:
@@ -193,27 +215,73 @@ if __name__ == '__main__':
         print('\nQuit image dater tool\n')
         sys.exit(0)
 
+    #& Test exiftool
+    cmd = f'exiftool -ver'
+    output = subprocess.Popen(
+        cmd,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        shell=True,
+    ).communicate()
+    stdout = output[0].decode('utf-8', errors='ignore').lower()
+    stderr = output[1].decode('utf-8', errors='ignore').lower()
+    if 'not recognized' in stdout or 'not recognized' in stderr:
+        print('')
+        print('ERROR: exiftool is not installed. Make sure you are on either Linux or WSL')
+        print('(Windows Subsystem for Linux). The tool doesn\'t work on Windows.')
+        print('\nQuit image dater tool\n')
+        sys.exit(1)
+
     #& Parse directory and rename images
     if args.directory:
         if not os.path.isdir(args.directory):
+            print('')
             print(f"ERROR: Cannot find directory: '{args.directory}'")
+            if args.directory.startswith('C:/'):
+                print('')
+                print('The path looks like a Windows path. Make sure you are on Linux or WSL')
+                print('(Windows Subsystem for Linux). The tool doesn\'t work on Windows. Paths')
+                print('on WSL should start with \'/mnt/c/...\'')
             print('\nQuit image dater tool\n')
             sys.exit(1)
+        
+        # Parsing a directory in dry-run mode without being verbose is pointless.
+        if args.dry_run and not args.verbose:
+            print('')
+            print('Forcing verbose mode because dry-run mode is enabled...')
+            print('')
+            args.verbose = True
 
-        user_input = input(
-            f"Rename the pictures in this folder:\n"
-            f"'{args.directory}'\n"
-            f"Proceed? [yes|no]\n"
-        )
-        if user_input.lower() in ('y', 'yes'):
+        # Only ask user input if not in dry-run mode
+        user_input = ''
+        if not args.dry_run:
+            user_input = input(
+                f"Rename the pictures in this folder:\n"
+                f"'{args.directory}'\n"
+                f"Proceed? [yes|no]\n"
+            )
+        if (user_input.lower() in ('y', 'yes')) or args.dry_run:
             parse_and_rename_images(args.directory, args.dry_run, args.verbose)
         print('\nQuit image dater tool\n')
         sys.exit(0)
 
     #& Inspect file
     if args.file:
+        if args.dry_run:
+            print('')
+            print('ERROR: Cannot use the -n option with the -f option. With the -f option, you')
+            print('only want to inspect the date of a single file. No renaming happens. So this')
+            print('is by definition always a dry run.')
+            print('\nQuit image dater tool\n')
+            sys.exit(1)
         if not os.path.isfile(args.file):
+            print('')
             print(f"ERROR: Cannot find file: '{args.file}'")
+            if args.file.startswith('C:/'):
+                print('')
+                print('The path looks like a Windows path. Make sure you are on Linux or WSL')
+                print('(Windows Subsystem for Linux). The tool doesn\'t work on Windows. Paths')
+                print('on WSL should start with \'/mnt/c/...\'')
             print('\nQuit image dater tool\n')
             sys.exit(1)
         if args.verbose:
