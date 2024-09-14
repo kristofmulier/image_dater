@@ -52,8 +52,10 @@ def show_help() -> None:
     print('Open WSL and navigate to the folder containing this script:')
     print('    $ cd /mnt/c/Users/krist/Documents/image_dater')
     print('')
-
-
+    print('Launch this script with the directory containing the images to process. Tip: use the')
+    print('yes command to automatically confirm:')
+    print('    $ yes | python image_dater.py -d "/mnt/c/Backup/Pictures_2024/unordered"')
+    print('')
     return
 
 def parse_and_rename_images(dirpath:str, dry_run:bool=False, verbose:bool=False) -> None:
