@@ -82,7 +82,7 @@ def parse_and_rename_images(dirpath:str, dry_run:bool=False, verbose:bool=False)
                 progress = file_cntr,
                 label    = 'Parse files ',
             )
-            if not f.lower().endswith(('.heic', '.mov', '.jpeg', '.jpg', '.mp4', '.png')):
+            if not f.lower().endswith(('.heic', '.mov', '.jpeg', '.jpg', '.mp4', '.png', '.webp')):
                 continue
             filepath = os.path.join(root, f).replace('\\', '/')
             filename = filepath.split('/')[-1]

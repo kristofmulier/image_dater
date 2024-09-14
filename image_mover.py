@@ -101,7 +101,7 @@ def move_images(dirpath:str, dry_run:bool=False, verbose:bool=False) -> None:
     filepath_list:List[str] = []
     for root, dirs, files in os.walk(dirpath):
         for f in files:
-            if not f.lower().endswith(('.heic', '.mov', '.jpeg', '.jpg', '.mp4', '.png')):
+            if not f.lower().endswith(('.heic', '.mov', '.jpeg', '.jpg', '.mp4', '.png', '.webp')):
                 continue
             filepath = os.path.join(root, f).replace('\\', '/')
             filename = filepath.split('/')[-1]
