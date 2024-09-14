@@ -117,7 +117,7 @@ def move_images(dirpath:str, dry_run:bool=False, verbose:bool=False) -> None:
         if not verbose:
             draw_progress_bar(
                 total    = len(filepath_list),
-                progress = filepath_list.index(filepath),
+                progress = filepath_list.index(filepath) + 1,
                 label    = 'Moving images',
             )
         assert os.path.isfile(filepath)
