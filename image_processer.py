@@ -105,19 +105,20 @@ def main():
         description = "Process images by renaming and moving them.",
         add_help    = False,
     )
-    parser.add_argument('-h', '--help',      action='store_true')
-
-    if args.help:
-        show_help()
-        print('\nQuit image processer tool\n')
-        sys.exit(0)
     
     # Mirror the arguments of both scripts
+    parser.add_argument('-h', '--help',      action='store_true')
     parser.add_argument('-d', '--directory', type=str, help="Directory to process")
     parser.add_argument('-f', '--file', type=str, help="File to inspect (used by image_dater.py)")
     parser.add_argument('-n', '--dry-run', action='store_true', help="Dry run mode (no changes made)")
     parser.add_argument('-v', '--verbose', action='store_true', help="Verbose mode")
     args = parser.parse_args()
+
+    # Show help and exit
+    if args.help:
+        show_help()
+        print('\nQuit image processer tool\n')
+        sys.exit(0)
 
     # Collect arguments to pass to both scripts
     script_args = []
