@@ -3,7 +3,6 @@
 
 from typing import *
 import re, os, datetime, argparse, sys, shutil
-basefolder = '/mnt/c/Backup'
 
 def show_help() -> None:
     '''
@@ -28,6 +27,8 @@ def show_help() -> None:
     print('    -d, --directory <directory> Move all images in the given directory and its sub-')
     print('                                directories to a folder structure based on their dates.')
     print('')
+    print('    -b, --basefolder <folder>   Base folder where organized images will be stored.')
+    print('')
     print('    -v, --verbose               Print more information during the process.')
     print('')
     print('    -n, --dry-run               Do not actually move files. Only show what would be done.')
@@ -44,10 +45,10 @@ def show_help() -> None:
     print('    $ cd /mnt/c/Users/krist/Documents/image_dater')
     print('')
     print('Move images from a directory and organize them into year/month folders:')
-    print('    $ python image_mover.py -d "/mnt/c/Backup/Pictures_2024/unordered"')
+    print('    $ python image_mover.py -d "/mnt/c/Users/krist/Pictures/Pictures_2025/unordered" -b "/mnt/c/Users/krist/Pictures"')
     print('')
     print('You can use the dry-run mode to check what would be moved:')
-    print('    $ python image_mover.py -d "/mnt/c/Backup/Pictures_2024/unordered" -n')
+    print('    $ python image_mover.py -d "/mnt/c/Users/krist/Pictures/Pictures_2025/unordered" -b "/mnt/c/Users/krist/Pictures" -n')
     print('')
     return
 
@@ -87,7 +88,7 @@ def draw_progress_bar(total:int, progress:int, label:str):
     progbar_percent = percent
     return
 
-def move_images(dirpath:str, dry_run:bool=False, verbose:bool=False) -> None:
+def move_images(dirpath:str, basefolder:str, dry_run:bool=False, verbose:bool=False) -> None:
     '''
     Parse the given folder for images and move them if they're already converted by the
     'image_dater.py' script.
@@ -190,6 +191,7 @@ if __name__ == '__main__':
     )
     parser.add_argument('-h', '--help',      action='store_true')
     parser.add_argument('-d', '--directory', action='store')
+    parser.add_argument('-b', '--basefolder', action='store')
     parser.add_argument('-n', '--dry-run',   action='store_true')
     parser.add_argument('-v', '--verbose',   action='store_true')
     args = parser.parse_args()
@@ -198,6 +200,9 @@ if __name__ == '__main__':
     if not args.help and not args.directory:
         print('ERROR: No action specified')
         show_help()
+        sys.exit(1)
+    if args.directory and not args.basefolder:
+        print('ERROR: Basefolder must be specified when using -d option')
         sys.exit(1)
 
     #& Show help and quit
@@ -215,11 +220,11 @@ if __name__ == '__main__':
             f"Process the pictures from this folder:\n"
             f"'{args.directory}'\n"
             f"and store them at this location:\n"
-            f"'{basefolder}'\n"
+            f"'{args.basefolder}'\n"
             f"Proceed? [yes|no]\n"
         )
         if user_input.lower() in ('y', 'yes'):
-            move_images(args.directory, args.dry_run, args.verbose)
+            move_images(args.directory, args.basefolder, args.dry_run, args.verbose)
         print('\nQuit image mover tool\n')
         sys.exit(0)
 

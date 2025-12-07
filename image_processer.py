@@ -21,7 +21,7 @@ def show_help() -> None:
     print('')
     print('Launch this script with the directory containing the images to process. Tip: use the')
     print('yes command to automatically confirm:')
-    print('    $ yes | python image_processer.py -d "/mnt/c/Backup/Pictures_2024/unordered"')
+    print('    $ yes | python image_processer.py -d "/mnt/c/Users/krist/Pictures/Pictures_2025/unordered" -b "/mnt/c/Users/krist/Pictures"')
     print('')
     print('')
     print('IMAGE DATER')
@@ -75,6 +75,8 @@ def show_help() -> None:
     print('    -d, --directory <directory> Move all images in the given directory and its sub-')
     print('                                directories to a folder structure based on their dates.')
     print('')
+    print('    -b, --basefolder <folder>   Base folder where organized images will be stored.')
+    print('')
     print('    -v, --verbose               Print more information during the process.')
     print('')
     print('    -n, --dry-run               Do not actually move files. Only show what would be done.')
@@ -109,6 +111,7 @@ def main():
     # Mirror the arguments of both scripts
     parser.add_argument('-h', '--help',      action='store_true')
     parser.add_argument('-d', '--directory', type=str, help="Directory to process")
+    parser.add_argument('-b', '--basefolder', type=str, help="Base folder where organized images will be stored")
     parser.add_argument('-f', '--file', type=str, help="File to inspect (used by image_dater.py)")
     parser.add_argument('-n', '--dry-run', action='store_true', help="Dry run mode (no changes made)")
     parser.add_argument('-v', '--verbose', action='store_true', help="Verbose mode")
@@ -120,24 +123,40 @@ def main():
         print('\nQuit image processer tool\n')
         sys.exit(0)
 
-    # Collect arguments to pass to both scripts
-    script_args = []
+    # Validate arguments
+    if args.directory and not args.basefolder:
+        print("ERROR: Basefolder must be specified when using -d option")
+        sys.exit(1)
+
+    # Collect arguments to pass to image_dater.py
+    dater_args = []
     if args.directory:
-        script_args += ['-d', args.directory]
+        dater_args += ['-d', args.directory]
     if args.file:
-        script_args += ['-f', args.file]
+        dater_args += ['-f', args.file]
     if args.dry_run:
-        script_args.append('-n')
+        dater_args.append('-n')
     if args.verbose:
-        script_args.append('-v')
+        dater_args.append('-v')
+
+    # Collect arguments to pass to image_mover.py
+    mover_args = []
+    if args.directory:
+        mover_args += ['-d', args.directory]
+        mover_args += ['-b', args.basefolder]
+    if args.dry_run:
+        mover_args.append('-n')
+    if args.verbose:
+        mover_args.append('-v')
 
     # Run image_dater.py first
     print("Running image_dater.py...")
-    run_script('image_dater.py', script_args)
+    run_script('image_dater.py', dater_args)
 
-    # Run image_mover.py second
-    print("Running image_mover.py...")
-    run_script('image_mover.py', script_args)
+    # Run image_mover.py second (only if we have a directory to process)
+    if args.directory:
+        print("Running image_mover.py...")
+        run_script('image_mover.py', mover_args)
 
 if __name__ == "__main__":
     main()

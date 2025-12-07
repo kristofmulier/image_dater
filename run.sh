@@ -1,0 +1,1 @@
+python image_processer.py -d "/mnt/c/Users/krist/Pictures/Pictures_2025/unordered" -b "/mnt/c/Users/krist/Pictures"
